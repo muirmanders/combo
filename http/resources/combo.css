@@ -1,0 +1,53 @@
+/*
+   Copyright 2015 Muir Manders.  All rights reserved.
+   Use of this source code is governed by a MIT-style
+   license that can be found in the LICENSE file.
+*/
+* {
+  box-sizing: border-box;
+}
+
+#board {
+  width: 95vmin;
+  height: 95vmin;
+  border: 1px solid black;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+}
+
+.row {
+  flex: 1;
+  -webkit-flex: 1;
+  width: 100%;
+  display: flex;
+  display: -webkit-flex;
+}
+
+.cell {
+  flex: 1;
+  -webkit-flex: 1;
+  border: 1px solid black;
+  background-color: chocolate;
+  font-size: 10vmin;
+  text-align: center;
+}
+
+.piece {
+  border-radius: 50%;
+}
+
+.white {
+  background-color: white;
+  color: black;
+}
+
+.black {
+  background-color: black;
+  color: white;
+}
+
+.valid-move {
+  background-color: green;
+}
