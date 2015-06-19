@@ -2,7 +2,10 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-var combo = {};
+var combo = {
+  moves: {},
+  splits: {}
+};
 
 combo.init_board = function(width, height) {
   var cells = [];
@@ -23,7 +26,8 @@ combo.init_board = function(width, height) {
             command: "move",
             args: {
               from: {x: +ui.draggable.attr("data-x"), y: +ui.draggable.attr("data-y")},
-              to: {x: +$(this).attr("data-x"), y: +$(this).attr("data-y")}
+              to: {x: +$(this).attr("data-x"), y: +$(this).attr("data-y")},
+              split: combo.splitting
             }
           }));
         }
@@ -67,8 +71,8 @@ combo.open_ws = function() {
 };
 
 combo.move = function(args) {
-  var moves = {};
-  var splits = {};
+  this.moves = {};
+  this.splits = {};
 
   for (var i = 0; i < args.moves.length; i++) {
     var m = args.moves[i];
@@ -76,7 +80,7 @@ combo.move = function(args) {
     var from = m.from.x + "-" + m.from.y;
     var to = m.to.x + "-" + m.to.y;
 
-    var type = m.split ? splits : moves;
+    var type = m.split ? this.splits : this.moves;
     type[from] = type[from] || [];
     type[from].push(to);
   }
@@ -86,30 +90,22 @@ combo.move = function(args) {
       var square = args.board[x][y];
 
       var cell = combo.cells[y][x];
-      var piece = cell.find(".piece");
+
+      cell.find(".piece").remove();
 
       if (square.piece_count == 0) {
-        piece.remove();
-      } else {
-        if (piece.length == 0) {
-          piece = $("<div class=piece>").appendTo(cell);
-          piece.attr("data-x", x);
-          piece.attr("data-y", y);
-        }
-
-        piece.text(square.piece_count);
+        continue;
       }
 
-      piece.removeClass();
+      var piece = $("<div class=piece>").appendTo(cell);
+      piece.attr("data-x", x);
+      piece.attr("data-y", y);
+
+      piece.text(square.piece_count);
       piece.addClass("piece");
+      piece.addClass(square.piece_color);
 
-      if (square.piece_color == "white") {
-        piece.addClass("white");
-      } else if (square.piece_color == "black") {
-        piece.addClass("black");
-      }
-
-      var tos = moves[x+"-"+y];
+      var tos = this.moves[x+"-"+y];
       if (tos) {
         piece.draggable({
           revert: "invalid",
@@ -124,4 +120,47 @@ combo.move = function(args) {
   }
 };
 
+combo.init_key_handlers = function() {
+  var swap_move_type = function(old_type, new_type) {
+    for (var x = 0; x < combo.width; x++) {
+      for (var y = 0; y < combo.height; y++) {
+        var piece = $(".piece[data-x="+x+"][data-y="+y+"]");
+        if (piece.length == 0) {
+          continue;
+        }
+
+        var tos = old_type[x+"-"+y];
+        if (tos) {
+          for (var i = 0; i < tos.length; i++) {
+            piece.removeClass("to-"+tos[i]);
+          }
+        }
+
+        tos = new_type[x+"-"+y];
+        if (tos) {
+          for (var i = 0; i < tos.length; i++) {
+            piece.addClass("to-"+tos[i]);
+          }
+        }
+      }
+    }
+  };
+
+  $(document).keydown(function(event) {
+    if (event.keyCode == 16) {
+      swap_move_type(combo.moves, combo.splits);
+      combo.splitting = true;
+    }
+  });
+
+
+  $(document).keyup(function(event) {
+    if (event.keyCode == 16) {
+      swap_move_type(combo.splits, combo.moves);
+      combo.splitting = false;
+    }
+  });
+};
+
+$(combo.init_key_handlers.bind(combo));
 $(combo.open_ws.bind(combo));
