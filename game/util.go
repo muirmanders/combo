@@ -29,19 +29,16 @@ func AvailableMoves(b Board, c Color) []Move {
 			from := sq.Position
 
 			addMovesInLine := func(to Position) {
-				for _, psq := range squaresInALine(b, from, to) {
-					if psq.PieceColor == c && psq.PieceCount > 0 {
+				for pi, psq := range squaresInALine(b, from, to) {
+					if sq.PieceCount > 1 || (psq.PieceColor == c && psq.PieceCount > 0) {
 						moves = append(moves, Move{from, psq.Position, false})
-						break
 					}
 
 					if sq.PieceCount == 1 {
 						break
 					}
 
-					moves = append(moves, Move{from, psq.Position, false})
-
-					if psq.PieceCount == 0 || psq.PieceColor == c {
+					if pi == 0 && (psq.PieceCount == 0 || psq.PieceColor == c) {
 						moves = append(moves, Move{from, psq.Position, true})
 					}
 
