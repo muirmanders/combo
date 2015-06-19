@@ -39,6 +39,10 @@ combo.init_board = function(width, height) {
   this.cells = cells;
 };
 
+combo.display_message = function(msg) {
+  $("#messages").text(msg);
+};
+
 combo.open_ws = function() {
   var width = 8, height = 8;
 
@@ -47,8 +51,12 @@ combo.open_ws = function() {
   ws.onmessage = function(event) {
     var cmd = JSON.parse(event.data);
     switch (cmd.command) {
-      case "move":
+    case "move":
       combo.move(cmd.args);
+      break;
+    case "game_over":
+      combo.display_message(cmd.args.message);
+      $(".piece").draggable({disabled: true});
       break;
     }
   };
@@ -160,7 +168,6 @@ combo.init_key_handlers = function() {
       combo.set_move_type();
     }
   });
-
 
   $(document).keyup(function(event) {
     if (event.keyCode == 16) {
