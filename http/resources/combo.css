@@ -1,10 +1,16 @@
 /*
-   Copyright 2015 Muir Manders.  All rights reserved.
-   Use of this source code is governed by a MIT-style
-   license that can be found in the LICENSE file.
-*/
+  Copyright 2015 Muir Manders.  All rights reserved.
+  Use of this source code is governed by a MIT-style
+  license that can be found in the LICENSE file.
+  */
 * {
   box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #board {

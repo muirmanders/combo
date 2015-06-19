@@ -104,60 +104,68 @@ combo.move = function(args) {
       piece.text(square.piece_count);
       piece.addClass("piece");
       piece.addClass(square.piece_color);
+    }
+  }
 
-      var tos = this.moves[x+"-"+y];
+  this.set_move_type();
+};
+
+combo.set_move_type = function() {
+  var old_type, new_type;
+  if (this.splitting) {
+    old_type = this.moves;
+    new_type = this.splits;
+  } else {
+    old_type = this.splits;
+    new_type = this.moves;
+  }
+
+  for (var x = 0; x < combo.width; x++) {
+    for (var y = 0; y < combo.height; y++) {
+      var piece = $(".piece[data-x="+x+"][data-y="+y+"]");
+      if (piece.length == 0) {
+        continue;
+      }
+
+      var tos = old_type[x+"-"+y];
+      if (tos) {
+        for (var i = 0; i < tos.length; i++) {
+          piece.removeClass("to-"+tos[i]);
+        }
+      }
+
+      tos = new_type[x+"-"+y];
       if (tos) {
         piece.draggable({
           revert: "invalid",
-          opacity: 0.75
+          opacity: 0.75,
+          disabled: false
         });
-
         for (var i = 0; i < tos.length; i++) {
-          piece.addClass("to-" + tos[i]);
+          piece.addClass("to-"+tos[i]);
         }
+      } else {
+        piece.draggable({disabled: true});
       }
     }
   }
 };
 
 combo.init_key_handlers = function() {
-  var swap_move_type = function(old_type, new_type) {
-    for (var x = 0; x < combo.width; x++) {
-      for (var y = 0; y < combo.height; y++) {
-        var piece = $(".piece[data-x="+x+"][data-y="+y+"]");
-        if (piece.length == 0) {
-          continue;
-        }
-
-        var tos = old_type[x+"-"+y];
-        if (tos) {
-          for (var i = 0; i < tos.length; i++) {
-            piece.removeClass("to-"+tos[i]);
-          }
-        }
-
-        tos = new_type[x+"-"+y];
-        if (tos) {
-          for (var i = 0; i < tos.length; i++) {
-            piece.addClass("to-"+tos[i]);
-          }
-        }
-      }
-    }
-  };
+  $(document).focus();
 
   $(document).keydown(function(event) {
     if (event.keyCode == 16) {
-      swap_move_type(combo.moves, combo.splits);
       combo.splitting = true;
+      combo.set_move_type();
     }
   });
 
 
   $(document).keyup(function(event) {
     if (event.keyCode == 16) {
-      swap_move_type(combo.splits, combo.moves);
       combo.splitting = false;
+      combo.set_move_type();
     }
   });
 };
