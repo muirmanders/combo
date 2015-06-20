@@ -126,7 +126,7 @@ func comboJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "combo.js", size: 4088, mode: os.FileMode(420), modTime: time.Unix(1434758159, 0)}
+	info := bindataFileInfo{name: "combo.js", size: 4088, mode: os.FileMode(420), modTime: time.Unix(1434840269, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
