@@ -4,8 +4,6 @@
 
 package game
 
-import "fmt"
-
 func AvailableMoves(b Board, c Color) []Move {
 	var moves []Move
 
@@ -21,24 +19,16 @@ func AvailableMoves(b Board, c Color) []Move {
 				continue
 			}
 
-			possibleDistance := sq.PieceCount - 1
-			if possibleDistance == 0 {
-				possibleDistance = 1
-			}
-
+			possibleDistance := sq.PieceCount
 			from := sq.Position
 
 			addMovesInLine := func(to Position) {
 				for pi, psq := range squaresInALine(b, from, to) {
-					if sq.PieceCount > 1 || (psq.PieceColor == c && psq.PieceCount > 0) {
+					if sq.PieceCount > 1 || psq.PieceColor == c || psq.PieceCount == 0 {
 						moves = append(moves, Move{from, psq.Position, false})
 					}
 
-					if sq.PieceCount == 1 {
-						break
-					}
-
-					if pi == 0 && (psq.PieceCount == 0 || psq.PieceColor == c) {
+					if sq.PieceCount > 1 && pi == 0 && (psq.PieceCount == 0 || psq.PieceColor == c) {
 						moves = append(moves, Move{from, psq.Position, true})
 					}
 
@@ -52,6 +42,11 @@ func AvailableMoves(b Board, c Color) []Move {
 			addMovesInLine(Position{x, y - possibleDistance})
 			addMovesInLine(Position{x + possibleDistance, y})
 			addMovesInLine(Position{x - possibleDistance, y})
+
+			addMovesInLine(Position{x + possibleDistance, y + possibleDistance})
+			addMovesInLine(Position{x + possibleDistance, y - possibleDistance})
+			addMovesInLine(Position{x - possibleDistance, y + possibleDistance})
+			addMovesInLine(Position{x - possibleDistance, y - possibleDistance})
 		}
 	}
 
@@ -59,32 +54,25 @@ func AvailableMoves(b Board, c Color) []Move {
 }
 
 func squaresInALine(b Board, from, to Position) []Square {
-	var (
-		variable *int
-		distance int
-	)
+	dx := to.X - from.X
+	dy := to.Y - from.Y
 
-	if from.X == to.X {
-		variable = &from.Y
-		distance = to.Y - from.Y
-	} else if from.Y == to.Y {
-		variable = &from.X
-		distance = to.X - from.X
-	} else {
-		panic(fmt.Sprintf("%+v -> %+v not in a line!", from, to))
+	distance := dx
+	if distance == 0 {
+		distance = dy
 	}
 
-	neg := 1
 	if distance < 0 {
 		distance = -distance
-		neg = -1
 	}
 
-	var ret []Square
+	dx /= distance
+	dy /= distance
 
-	initial := *variable
-	for i := 1; i <= distance; i++ {
-		*variable = initial + neg*i
+	var ret []Square
+	for i := 0; i < distance; i++ {
+		from.X += dx
+		from.Y += dy
 		square, err := b.Get(from)
 		if err == nil {
 			ret = append(ret, square)

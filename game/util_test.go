@@ -70,7 +70,7 @@ func TestAvailableMoves(t *testing.T) {
 		t.Errorf("got %+v, expected %+v", got, expected)
 	}
 
-	applyMove(b, Move{Position{0, 0}, Position{0, 1}, false})
+	b.applyMove(Move{Position{0, 0}, Position{0, 1}, false})
 
 	expected = []Move{
 		{Position{0, 1}, Position{0, 2}, false},
@@ -89,10 +89,10 @@ func TestAvailableMoves(t *testing.T) {
 	}
 
 	// merge to triple
-	applyMove(b, Move{Position{0, 1}, Position{1, 1}, false})
+	b.applyMove(Move{Position{0, 1}, Position{1, 1}, false})
 
 	// make room on black side for longer distance white move
-	applyMove(b, Move{Position{1, 2}, Position{1, 3}, false})
+	b.applyMove(Move{Position{1, 2}, Position{1, 3}, false})
 
 	expected = []Move{
 		{Position{1, 0}, Position{1, 1}, false},
