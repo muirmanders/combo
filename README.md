@@ -10,11 +10,12 @@ Merged pieces are able to split off one count=1 piece and place it on an adjacen
 
 # setup
 
-1. Make sure you have go installed.
+1. Make sure you have the [go tool installed](https://golang.org/dl/).
+1. Make sure you have your [GOPATH configured](https://golang.org/doc/code.html) ("The GOPATH environment variable").
 1. `git clone git@github.com:muirmanders/combo.git`
 1. `cd combo; rake`
 1. `$GOPATH/bin/combo http -l localhost:8080`
-1. Open browser to http://localhost:8080
+1. Open browser to [http://localhost:8080](http://localhost:8080)
 
 # development notes
 
