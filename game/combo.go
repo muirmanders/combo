@@ -20,6 +20,14 @@ func (c Color) String() string {
 	return string(c)
 }
 
+func (c Color) Other() Color {
+	if c == Black {
+		return White
+	} else {
+		return Black
+	}
+}
+
 type Position struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -36,6 +44,7 @@ type Board interface {
 	Width() int
 	Height() int
 	Get(Position) (Square, error)
+	IfMove(Move) Board
 }
 
 type Move struct {
@@ -127,27 +136,8 @@ func (g *game) Play() Player {
 			return otherPlayer
 		}
 
-		applyMove(g.board, move)
+		g.board.applyMove(move)
 
 		g.turn = otherPlayer
-	}
-}
-
-func applyMove(b *board, move Move) {
-	fromSq := &b.squares[move.From.Y][move.From.X]
-	toSq := &b.squares[move.To.Y][move.To.X]
-
-	if move.Split {
-		toSq.PieceColor = fromSq.PieceColor
-		toSq.PieceCount++
-		fromSq.PieceCount--
-	} else {
-		if toSq.PieceColor == fromSq.PieceColor {
-			toSq.PieceCount += fromSq.PieceCount
-		} else {
-			toSq.PieceCount = fromSq.PieceCount
-			toSq.PieceColor = fromSq.PieceColor
-		}
-		fromSq.PieceCount = 0
 	}
 }

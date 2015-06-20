@@ -149,7 +149,7 @@ func handleConnect(conn *websocket.Conn) {
 
 			singleGame, err = game.NewGame(game.Config{
 				Black:  player,
-				White:  ai.NewRandomPlayer(game.White),
+				White:  ai.NewMediumPlayer(game.White),
 				Width:  args.Width,
 				Height: args.Height,
 				Logger: os.Stderr,
