@@ -24,6 +24,6 @@ func (p randomPlayer) Name() string {
 }
 
 func (p randomPlayer) Move(b game.Board) game.Move {
-	moves := game.AvailableMoves(b, p.Color())
+	moves := b.AvailableMoves(p.Color())
 	return moves[rand.Intn(len(moves))]
 }

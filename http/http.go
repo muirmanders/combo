@@ -90,7 +90,7 @@ func (p httpPlayer) Move(b game.Board) game.Move {
 		Command: "move",
 		Args: map[string]interface{}{
 			"board": squares,
-			"moves": game.AvailableMoves(b, p.Color()),
+			"moves": b.AvailableMoves(p.Color()),
 		},
 	}
 

@@ -44,6 +44,8 @@ type Board interface {
 	Width() int
 	Height() int
 	Get(Position) (Square, error)
+	PieceCount(Color) int
+	AvailableMoves(Color) []Move
 	IfMove(Move) Board
 }
 
@@ -81,7 +83,7 @@ func NewGame(config Config) (Game, error) {
 	}
 
 	return &game{
-		board:  newBoard(config.Width, config.Height),
+		board:  NewBoard(config.Width, config.Height).(*board),
 		black:  config.Black,
 		white:  config.White,
 		turn:   config.Black,
@@ -115,7 +117,7 @@ func (g *game) Play() Player {
 			otherPlayer = g.black
 		}
 
-		availableMoves := AvailableMoves(g.board, g.turn.Color())
+		availableMoves := g.board.AvailableMoves(g.turn.Color())
 		if len(availableMoves) == 0 {
 			g.log("Player %s loses for having no moves.", g.turn.Name())
 			return otherPlayer

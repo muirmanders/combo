@@ -17,29 +17,9 @@ func abs(i int) int {
 	return i
 }
 
-// simple heuristic to maximize # of pieces vs opponent, and work towards
-// average combo size of 5 at the start
+// simple heuristic to maximize # of pieces vs opponent
 func scoreBoard(b game.Board, c game.Color) int {
-	var myPieces, myTiles, theirPieces int
-
-	for x := 0; x < b.Width(); x++ {
-		for y := 0; y < b.Height(); y++ {
-			sq, _ := b.Get(game.Position{x, y})
-
-			if sq.PieceColor == c {
-				myPieces += sq.PieceCount
-				myTiles++
-			} else {
-				theirPieces += sq.PieceCount
-			}
-		}
-	}
-
-	if myPieces != theirPieces {
-		return myPieces - theirPieces
-	}
-
-	return -abs(int((float64(myPieces)/float64(myTiles) - 5.0)))
+	return b.PieceCount(c) - b.PieceCount(c.Other())
 }
 
 var nullMove game.Move
@@ -49,7 +29,7 @@ func negamax(b game.Board, depth, alpha, beta int, color game.Color) (int, game.
 		return scoreBoard(b, color), nullMove
 	}
 
-	moves := game.AvailableMoves(b, color)
+	moves := b.AvailableMoves(color)
 
 	if len(moves) == 0 {
 		return math.MinInt32 + 1, nullMove

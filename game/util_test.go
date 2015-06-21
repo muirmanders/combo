@@ -6,65 +6,65 @@ package game
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
-func TestSquaresInALine(t *testing.T) {
-	b := newBoard(3, 3)
+type moveList []Move
 
-	var expected []Square
+func (m moveList) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
+}
 
-	got := squaresInALine(b, Position{0, 0}, Position{0, 0})
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
-	}
+func (m moveList) Len() int {
+	return len(m)
+}
 
-	got = squaresInALine(b, Position{0, 0}, Position{-2, 0})
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
+func (m moveList) Less(i, j int) bool {
+	if m[i].From.X != m[j].From.X {
+		return m[i].From.X < m[j].From.X
 	}
-
-	expected = []Square{
-		b.mustGet(Position{0, 1}),
+	if m[i].From.Y != m[j].From.Y {
+		return m[i].From.Y < m[j].From.Y
 	}
-	got = squaresInALine(b, Position{0, 0}, Position{0, 1})
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
+	if m[i].To.X != m[j].To.X {
+		return m[i].To.X < m[j].To.X
 	}
-
-	expected = []Square{
-		b.mustGet(Position{1, 0}),
+	if m[i].To.Y != m[j].To.Y {
+		return m[i].To.Y < m[j].To.Y
 	}
-	got = squaresInALine(b, Position{1, 1}, Position{1, 0})
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
-	}
-
-	expected = []Square{
-		b.mustGet(Position{1, 2}),
-		b.mustGet(Position{2, 2}),
-	}
-	got = squaresInALine(b, Position{0, 2}, Position{4, 2})
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
-	}
+	return !m[i].Split
 }
 
 func TestAvailableMoves(t *testing.T) {
-	b := newBoard(2, 4)
+	b := NewBoard(2, 5).(*board)
 
 	expected := []Move{
 		{Position{0, 0}, Position{0, 1}, false},
 		{Position{0, 0}, Position{1, 0}, false},
-		{Position{0, 1}, Position{0, 0}, false},
-		{Position{0, 1}, Position{1, 1}, false},
-		{Position{1, 0}, Position{1, 1}, false},
+		{Position{0, 0}, Position{1, 1}, false},
+
 		{Position{1, 0}, Position{0, 0}, false},
+		{Position{1, 0}, Position{0, 1}, false},
+		{Position{1, 0}, Position{1, 1}, false},
+
+		{Position{0, 1}, Position{0, 0}, false},
+		{Position{0, 1}, Position{1, 0}, false},
+		{Position{0, 1}, Position{1, 1}, false},
+		{Position{0, 1}, Position{0, 2}, false},
+		{Position{0, 1}, Position{1, 2}, false},
+
+		{Position{1, 1}, Position{0, 0}, false},
 		{Position{1, 1}, Position{1, 0}, false},
 		{Position{1, 1}, Position{0, 1}, false},
+		{Position{1, 1}, Position{0, 2}, false},
+		{Position{1, 1}, Position{1, 2}, false},
 	}
 
-	got := AvailableMoves(b, White)
+	got := b.AvailableMoves(White)
+
+	sort.Sort(moveList(expected))
+	sort.Sort(moveList(got))
 
 	if !reflect.DeepEqual(expected, got) {
 		t.Errorf("got %+v, expected %+v", got, expected)
@@ -73,41 +73,26 @@ func TestAvailableMoves(t *testing.T) {
 	b.applyMove(Move{Position{0, 0}, Position{0, 1}, false})
 
 	expected = []Move{
-		{Position{0, 1}, Position{0, 2}, false},
+		{Position{1, 0}, Position{0, 0}, false},
+		{Position{1, 0}, Position{0, 1}, false},
+		{Position{1, 0}, Position{1, 1}, false},
+
 		{Position{0, 1}, Position{0, 0}, false},
 		{Position{0, 1}, Position{0, 0}, true},
+		{Position{0, 1}, Position{1, 0}, false},
+		{Position{0, 1}, Position{1, 0}, true},
 		{Position{0, 1}, Position{1, 1}, false},
-		{Position{1, 0}, Position{1, 1}, false},
+		{Position{0, 1}, Position{1, 1}, true},
+		{Position{0, 1}, Position{0, 2}, false},
+		{Position{0, 1}, Position{0, 2}, true},
+		{Position{0, 1}, Position{1, 2}, false},
+		{Position{0, 1}, Position{1, 2}, true},
+		{Position{0, 1}, Position{0, 3}, false},
+
+		{Position{1, 1}, Position{0, 0}, false},
 		{Position{1, 1}, Position{1, 0}, false},
 		{Position{1, 1}, Position{0, 1}, false},
-	}
-
-	got = AvailableMoves(b, White)
-
-	if !reflect.DeepEqual(expected, got) {
-		t.Errorf("got %+v, expected %+v", got, expected)
-	}
-
-	// merge to triple
-	b.applyMove(Move{Position{0, 1}, Position{1, 1}, false})
-
-	// make room on black side for longer distance white move
-	b.applyMove(Move{Position{1, 2}, Position{1, 3}, false})
-
-	expected = []Move{
-		{Position{1, 0}, Position{1, 1}, false},
+		{Position{1, 1}, Position{0, 2}, false},
 		{Position{1, 1}, Position{1, 2}, false},
-		{Position{1, 1}, Position{1, 2}, true},
-		{Position{1, 1}, Position{1, 3}, false},
-		{Position{1, 1}, Position{1, 0}, false},
-		{Position{1, 1}, Position{0, 1}, false},
-		{Position{1, 1}, Position{0, 1}, true},
 	}
-
-	got = AvailableMoves(b, White)
-
-	if !reflect.DeepEqual(expected, got) {
-		t.Errorf("got %+v, expected %+v", got, expected)
-	}
-
 }

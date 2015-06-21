@@ -111,7 +111,7 @@ func (p cliPlayer) Move(b game.Board) game.Move {
 		}
 
 		move := game.Move{from, to, split}
-		available := game.AvailableMoves(b, p.Color())
+		available := b.AvailableMoves(p.Color())
 		for _, m := range available {
 			if move == m {
 				return move

@@ -7,13 +7,14 @@ package game
 import "testing"
 
 func TestApplyMove(t *testing.T) {
-	b := newBoard(2, 4)
+	b := NewBoard(2, 4).(*board)
 
 	checkSquare := func(x, y, count int, color Color) {
-		if c := b.mustGet(Position{x, y}).PieceCount; c != count {
+		sq, _ := b.Get(Position{x, y})
+		if c := sq.PieceCount; c != count {
 			t.Errorf("%d,%y was %d", x, y, c)
 		}
-		if c := b.mustGet(Position{x, y}).PieceColor; c != color {
+		if c := sq.PieceColor; c != color {
 			t.Errorf("%d,%y was %s", x, y, c)
 		}
 	}
