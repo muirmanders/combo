@@ -10,16 +10,29 @@ import (
 	"math/rand"
 )
 
-func abs(i int) int {
-	if i < 0 {
-		return -i
-	}
-	return i
-}
+// simple heuristic for board evaluation
+func scoreBoard(b game.Board, c game.Color) (score int) {
 
-// simple heuristic to maximize # of pieces vs opponent
-func scoreBoard(b game.Board, c game.Color) int {
-	return b.PieceCount(c) - b.PieceCount(c.Other())
+	var myPieceCount, theirPieceCount int
+
+	for x := 0; x < b.Width(); x++ {
+		for y := 0; y < b.Height(); y++ {
+			sq, _ := b.Get(game.Position{x, y})
+			if sq.PieceColor == c {
+				myPieceCount += sq.PieceCount
+				if sq.PieceCount == 1 || sq.PieceCount > 4 {
+					score--
+				}
+			} else {
+				theirPieceCount += sq.PieceCount
+				if sq.PieceCount == 1 || sq.PieceCount > 4 {
+					score++
+				}
+			}
+		}
+	}
+
+	return score + 5*int(float64(myPieceCount-theirPieceCount)*float64(2*b.Width())/float64(myPieceCount)+0.5)
 }
 
 var nullMove game.Move
@@ -46,12 +59,12 @@ func negamax(b game.Board, depth, alpha, beta int, color game.Color) (int, game.
 		if val > bestScore {
 			bestScore = val
 			bestMove = moves[i]
-			if val > alpha {
-				alpha = val
-			}
-			if alpha >= beta {
-				break
-			}
+		}
+		if val > alpha {
+			alpha = val
+		}
+		if alpha >= beta {
+			break
 		}
 	}
 

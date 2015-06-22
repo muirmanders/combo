@@ -44,7 +44,6 @@ type Board interface {
 	Width() int
 	Height() int
 	Get(Position) (Square, error)
-	PieceCount(Color) int
 	AvailableMoves(Color) []Move
 	IfMove(Move) Board
 }

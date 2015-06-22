@@ -30,6 +30,6 @@ func (p mediumPlayer) Name() string {
 }
 
 func (p mediumPlayer) Move(b game.Board) game.Move {
-	_, move := negamax(b, 4, math.MinInt32, math.MaxInt32, p.Color())
+	_, move := negamax(b, 3, math.MinInt32, math.MaxInt32, p.Color())
 	return move
 }

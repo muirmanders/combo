@@ -10,9 +10,6 @@ type board struct {
 	squares []Square
 	width   int
 	height  int
-
-	blackCount int
-	whiteCount int
 }
 
 func NewBoard(width, height int) Board {
@@ -32,24 +29,14 @@ func NewBoard(width, height int) Board {
 			if y <= 1 {
 				sq.PieceCount = 1
 				sq.PieceColor = White
-				b.whiteCount++
 			} else if y >= height-2 {
 				sq.PieceCount = 1
 				sq.PieceColor = Black
-				b.blackCount++
 			}
 		}
 	}
 
 	return b
-}
-
-func (b *board) PieceCount(c Color) int {
-	if c == Black {
-		return b.blackCount
-	} else {
-		return b.whiteCount
-	}
 }
 
 var ErrOutOfBounds = errors.New("out of bounds")
@@ -132,11 +119,6 @@ func (b *board) applyMove(move Move) {
 		if toSq.PieceColor == fromSq.PieceColor {
 			toSq.PieceCount += fromSq.PieceCount
 		} else {
-			if toSq.PieceColor == Black {
-				b.blackCount -= toSq.PieceCount
-			} else {
-				b.whiteCount -= toSq.PieceCount
-			}
 			toSq.PieceCount = fromSq.PieceCount
 			toSq.PieceColor = fromSq.PieceColor
 		}
