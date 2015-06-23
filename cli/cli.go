@@ -95,22 +95,25 @@ func (p cliPlayer) Move(b game.Board) game.Move {
 
 	for {
 		var (
-			from  game.Position
-			to    game.Position
-			split bool
+			move game.Move
 
 			n   int
 			err error
 		)
 
 		for n < 4 || err != nil {
-			fmt.Fprintf(os.Stdout, "Enter move for %s (fromx,fromy tox,toy split?): ", p.Name())
+			fmt.Fprintf(os.Stdout, "Enter move for %s (fromx,fromy tox,toy count): ", p.Name())
 			scanner := bufio.NewScanner(os.Stdin)
 			scanner.Scan()
-			n, err = fmt.Sscanf(scanner.Text(), "%d,%d %d,%d %t", &from.X, &from.Y, &to.X, &to.Y, &split)
+			n, err = fmt.Sscanf(scanner.Text(), "%d,%d %d,%d %d",
+				&move.From.X,
+				&move.From.Y,
+				&move.To.X,
+				&move.To.Y,
+				&move.PieceCount,
+			)
 		}
 
-		move := game.Move{from, to, split}
 		available := b.AvailableMoves(p.Color())
 		for _, m := range available {
 			if move == m {

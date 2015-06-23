@@ -49,9 +49,9 @@ type Board interface {
 }
 
 type Move struct {
-	From  Position `json:"from"`
-	To    Position `json:"to"`
-	Split bool     `json:"split"`
+	From       Position `json:"from"`
+	To         Position `json:"to"`
+	PieceCount int      `json:"piece_count"`
 }
 
 type Player interface {

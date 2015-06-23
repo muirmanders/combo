@@ -87,12 +87,10 @@ func (b *board) AvailableMoves(c Color) []Move {
 
 						psq := b.squares[x+y*b.width]
 
-						if sq.PieceCount > 1 || psq.PieceColor == c || psq.PieceCount == 0 {
-							moves = append(moves, Move{sq.Position, psq.Position, false})
-						}
-
-						if sq.PieceCount > 1 && i == 1 && (psq.PieceCount == 0 || psq.PieceColor == c) {
-							moves = append(moves, Move{sq.Position, psq.Position, true})
+						for splitSize := i; splitSize <= sq.PieceCount; splitSize++ {
+							if splitSize > 1 || psq.PieceCount == 0 || psq.PieceColor == c {
+								moves = append(moves, Move{sq.Position, psq.Position, splitSize})
+							}
 						}
 
 						if psq.PieceCount > 0 {
@@ -111,18 +109,13 @@ func (b *board) applyMove(move Move) {
 	fromSq := &b.squares[move.From.Y*b.width+move.From.X]
 	toSq := &b.squares[move.To.Y*b.width+move.To.X]
 
-	if move.Split {
-		toSq.PieceColor = fromSq.PieceColor
-		toSq.PieceCount++
-		fromSq.PieceCount--
+	fromSq.PieceCount -= move.PieceCount
+
+	if toSq.PieceColor == fromSq.PieceColor {
+		toSq.PieceCount += move.PieceCount
 	} else {
-		if toSq.PieceColor == fromSq.PieceColor {
-			toSq.PieceCount += fromSq.PieceCount
-		} else {
-			toSq.PieceCount = fromSq.PieceCount
-			toSq.PieceColor = fromSq.PieceColor
-		}
-		fromSq.PieceCount = 0
+		toSq.PieceCount = move.PieceCount
+		toSq.PieceColor = fromSq.PieceColor
 	}
 }
 

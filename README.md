@@ -2,11 +2,9 @@
 
 Combo is an 8x8 board game. The top two rows start off with white pieces, and the bottom two rows black pieces. The players take turns moving a piece until the game is over. A player wins by capturing all his oponent's pieces.
 
-Pieces may combine with friendly pieces by moving into them. A piece has two properties: color (black/white), and count (number of pieces that have merged to make this piece). A piece is allowed to move up to count squares horizontally, vertically, or diagonally. Two friendly pieces of any count are able to merge (e.g. a count=3 piece can merge with a count=4 to produce a count=7).
+A piece has two properties: color (black/white), and count (number of pieces that have merged to make this piece). Pieces may combine with friendly pieces by moving into them. Two friendly pieces of any count are able to merge (e.g. a count=3 piece can merge with a count=4 to produce a count=7). A piece is allowed to move up to count squares horizontally, vertically, or diagonally.  When moving, pieces are optionally able to split off any number of pieces less than their count. This split off piece can then be moved like a normal piece of that count.
 
 You capture enemy pieces by moving onto their square. Your pieces cannot jump over other pieces. Any count piece can destroy any enemy piece, except count=1 pieces are not able to capture at all.
-
-Merged pieces are able to split off one count=1 piece and place it on an adjacent empty square, or merge it with an adjacent friendly piece. You can not capture enemy pieces by splitting.
 
 # setup
 

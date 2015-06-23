@@ -16,7 +16,7 @@ end
 
 task :install => ["#{GOBIN}/godep", "#{GOBIN}/go-bindata"] do
   # generate static http resources
-  sh "#{GOBIN}/godep go generate ./..."
+  sh "PATH='#{GOBIN}:#{ENV['PATH']}' godep go generate ./..."
   sh "#{GOBIN}/godep go install ./..."
 end
 
