@@ -217,7 +217,6 @@ combo.init_key_handlers = function() {
         return;
       }
       combo.split_piece_count = event.keyCode - 48;
-      combo.display_message("move piece count: " + combo.split_piece_count);
       combo.set_move_type();
     }
   });
@@ -225,7 +224,6 @@ combo.init_key_handlers = function() {
   $(document).keyup(function(event) {
     if (event.keyCode > 48 && event.keyCode <= 57) {
       combo.split_piece_count = null;
-      combo.display_message("");
       combo.set_move_type();
     }
   });
