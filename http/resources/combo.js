@@ -20,14 +20,18 @@ combo.init_board = function(width, height) {
       cells[y][x] = $("<div class=cell>").attr("data-x", x).attr("data-y", y).appendTo(row).droppable({
         tolerance: "intersect",
         accept: ".to-"+x+"-"+y,
-        activeClass: "valid-move",
         drop: function(event, ui) {
+          ui.draggable.addClass("dropped");
+
+          // avoid piece flicker when dropping a piece and the helper disappears
+          ui.helper.clone().appendTo(ui.helper.parent());
+
           combo.ws.send(JSON.stringify({
             command: "move",
             args: {
               from: {x: +ui.draggable.attr("data-x"), y: +ui.draggable.attr("data-y")},
               to: {x: +$(this).attr("data-x"), y: +$(this).attr("data-y")},
-              piece_count: combo.split_piece_count || +ui.draggable.text()
+              piece_count: combo.split_piece_count || +ui.draggable.attr("data-count")
             }
           }));
         }
@@ -85,10 +89,9 @@ combo.move = function(args) {
     var m = args.moves[i];
 
     var from = m.from.x + "-" + m.from.y + "-" + m.piece_count;
-    var to = m.to.x + "-" + m.to.y;
 
     this.moves[from] = this.moves[from] || [];
-    this.moves[from].push(to);
+    this.moves[from].push(m.to);
   }
 
   for (var x = 0; x < this.width; x++) {
@@ -106,6 +109,8 @@ combo.move = function(args) {
       var piece = $("<div class=piece>").appendTo(cell);
       piece.attr("data-x", x);
       piece.attr("data-y", y);
+      piece.attr("data-count", square.piece_count);
+      piece.attr("data-color", square.piece_color);
 
       piece.text(square.piece_count);
       piece.addClass("piece");
@@ -124,7 +129,7 @@ combo.set_move_type = function() {
         continue;
       }
 
-      var split_piece_count = this.split_piece_count || +piece.text();
+      var split_piece_count = this.split_piece_count || +piece.attr("data-count");
 
       // clear out existing tos
       var classes = piece.attr("class").split(/\s+/);
@@ -134,15 +139,67 @@ combo.set_move_type = function() {
         }
       }
 
+      var is_dragging = piece.hasClass("ui-draggable-dragging");
+
+      if (is_dragging) {
+        $(".valid-move").removeClass("valid-move");
+
+        if (split_piece_count < +piece.attr("data-count")) {
+          piece.show().css("opacity", 0.75).text(+piece.attr("data-count")-split_piece_count);
+          $(".ui-draggable-helper").text(split_piece_count);
+        } else {
+         piece.hide();
+         $(".ui-draggable-helper").show().text(split_piece_count);
+        }
+      } else {
+        piece.text(piece.attr("data-count"));
+      }
+
       var tos = this.moves[x+"-"+y+"-"+split_piece_count];
       if (tos) {
         piece.draggable({
           revert: "invalid",
           opacity: 0.75,
-          disabled: false
+          disabled: false,
+          helper: "clone",
+          start: (function(tos, split_piece_count) {
+            return function(event, ui) {
+              var me = $(this);
+
+              me.removeClass("dropped");
+
+              // ack
+              ui.helper.width(me.width()).height(me.height());
+              ui.helper.addClass("ui-draggable-helper");
+
+              if (split_piece_count < +me.attr("data-count")) {
+                me.text(+me.attr("data-count") - split_piece_count).css("opacity", 0.75);
+                ui.helper.text(split_piece_count);
+              } else {
+                me.hide();
+              }
+
+              for (var i = 0; i < tos.length; i++) {
+                $(".cell[data-x="+tos[i].x+"][data-y="+tos[i].y+"]").addClass("valid-move");
+              }
+            };
+          })(tos, split_piece_count),
+
+          stop: function(event, ui) {
+            var me = $(this);
+            if (!me.hasClass("dropped")) {
+              me.show().css("opacity", 1);
+              me.text(me.attr("data-count"));
+            }
+            $(".valid-move").removeClass("valid-move");
+          }
         });
+
         for (var i = 0; i < tos.length; i++) {
-          piece.addClass("to-"+tos[i]);
+          piece.addClass("to-"+tos[i].x + "-" + tos[i].y);
+          if (is_dragging) {
+            $(".cell[data-x="+tos[i].x+"][data-y="+tos[i].y+"]").addClass("valid-move");
+          }
         }
       } else {
         piece.draggable({disabled: true});
@@ -156,6 +213,9 @@ combo.init_key_handlers = function() {
 
   $(document).keydown(function(event) {
     if (event.keyCode > 48 && event.keyCode <= 57) {
+      if (combo.split_piece_count == event.keyCode - 48) {
+        return;
+      }
       combo.split_piece_count = event.keyCode - 48;
       combo.display_message("move piece count: " + combo.split_piece_count);
       combo.set_move_type();
