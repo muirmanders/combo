@@ -5,7 +5,6 @@
 package http
 
 import (
-	"combo/ai"
 	"combo/game"
 	"encoding/json"
 	"fmt"
@@ -16,10 +15,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var singleGame game.Game
+var (
+	singleGame game.Game
+	cpuPlayer  game.Player
+)
 
-func Go(listenAddr string) {
+func Go(listenAddr string, cpu game.Player) {
 	mux := gohttp.NewServeMux()
+
+	cpuPlayer = cpu
 
 	mux.HandleFunc("/", func(w gohttp.ResponseWriter, r *gohttp.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -76,20 +80,13 @@ type commandToClient struct {
 }
 
 func (p httpPlayer) Move(b game.Board) game.Move {
-	squares := make([][]game.Square, b.Width())
-	for x := 0; x < b.Width(); x++ {
-		squares[x] = make([]game.Square, b.Height())
-		for y := 0; y < b.Height(); y++ {
-			squares[x][y], _ = b.Get(game.Position{x, y})
-		}
-	}
 
 	var move game.Move
 
 	moveCommand := commandToClient{
 		Command: "move",
 		Args: map[string]interface{}{
-			"board": squares,
+			"board": b,
 			"moves": b.AvailableMoves(p.Color()),
 		},
 	}
@@ -149,7 +146,7 @@ func handleConnect(conn *websocket.Conn) {
 
 			singleGame, err = game.NewGame(game.Config{
 				Black:  player,
-				White:  ai.NewMediumPlayer(game.White),
+				White:  cpuPlayer,
 				Width:  args.Width,
 				Height: args.Height,
 				Logger: os.Stderr,

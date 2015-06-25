@@ -4,12 +4,38 @@
 
 package game
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
 
 type board struct {
 	squares []Square
 	width   int
 	height  int
+}
+
+type jsonBoard struct {
+	Squares [][]Square `json:"squares"`
+	Width   int        `json:"width"`
+	Height  int        `json:"height"`
+}
+
+func (b *board) MarshalJSON() ([]byte, error) {
+	jb := jsonBoard{
+		Squares: make([][]Square, b.width),
+		Width:   b.width,
+		Height:  b.height,
+	}
+
+	for x := 0; x < b.width; x++ {
+		jb.Squares[x] = make([]Square, b.height)
+		for y := 0; y < b.height; y++ {
+			jb.Squares[x][y] = b.squares[y*b.width+x]
+		}
+	}
+
+	return json.Marshal(jb)
 }
 
 func NewBoard(width, height int) Board {
@@ -116,6 +142,10 @@ func (b *board) applyMove(move Move) {
 	} else {
 		toSq.PieceCount = move.PieceCount
 		toSq.PieceColor = fromSq.PieceColor
+	}
+
+	if fromSq.PieceCount == 0 {
+		fromSq.PieceColor = emptySquare
 	}
 }
 

@@ -7,7 +7,6 @@ package cli
 import (
 	"bufio"
 	"bytes"
-	"combo/ai"
 	"combo/game"
 	"fmt"
 	"os"
@@ -20,10 +19,10 @@ type cliPlayer struct {
 	color game.Color
 }
 
-func Go() {
+func Go(cpuPlayer game.Player) {
 	config := game.Config{
 		Black: cliPlayer{game.Black},
-		White: ai.NewRandomPlayer(game.White),
+		White: cpuPlayer,
 
 		Width:  8,
 		Height: 8,

@@ -96,7 +96,7 @@ combo.move = function(args) {
 
   for (var x = 0; x < this.width; x++) {
     for (var y = 0; y < this.height; y++) {
-      var square = args.board[x][y];
+      var square = args.board.squares[x][y];
 
       var cell = combo.cells[y][x];
 

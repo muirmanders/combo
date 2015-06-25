@@ -14,6 +14,8 @@ type Color string
 const (
 	White Color = "white"
 	Black Color = "black"
+
+	emptySquare Color = ""
 )
 
 func (c Color) String() string {
@@ -36,7 +38,7 @@ type Position struct {
 type Square struct {
 	Position
 
-	PieceColor Color `json:"piece_color"`
+	PieceColor Color `json:"piece_color,omitempty"`
 	PieceCount int   `json:"piece_count"`
 }
 
