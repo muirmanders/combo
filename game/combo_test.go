@@ -12,22 +12,22 @@ func TestApplyMove(t *testing.T) {
 	checkSquare := func(x, y, count int, color Color) {
 		sq, _ := b.Get(Position{x, y})
 		if c := sq.PieceCount; c != count {
-			t.Errorf("%d,%y was %d", x, y, c)
+			t.Errorf("%d,%d was %d", x, y, c)
 		}
 		if c := sq.PieceColor; c != color {
-			t.Errorf("%d,%y was %s", x, y, c)
+			t.Errorf("%d,%d was %s", x, y, c)
 		}
 	}
 
-	b.applyMove(Move{Position{0, 0}, Position{0, 1}, false})
-	checkSquare(0, 0, 0, White)
+	b.applyMove(Move{Position{0, 0}, Position{0, 1}, 1})
+	checkSquare(0, 0, 0, emptySquare)
 	checkSquare(0, 1, 2, White)
 
-	b.applyMove(Move{Position{0, 1}, Position{0, 2}, false})
-	checkSquare(0, 1, 0, White)
+	b.applyMove(Move{Position{0, 1}, Position{0, 2}, 2})
+	checkSquare(0, 1, 0, emptySquare)
 	checkSquare(0, 2, 2, White)
 
-	b.applyMove(Move{Position{0, 2}, Position{0, 1}, true})
+	b.applyMove(Move{Position{0, 2}, Position{0, 1}, 1})
 	checkSquare(0, 2, 1, White)
 	checkSquare(0, 1, 1, White)
 }
