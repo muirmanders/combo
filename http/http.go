@@ -31,11 +31,14 @@ func Go(listenAddr string, cpu game.Player) {
 		w.Write(MustAsset("combo.html"))
 	})
 
-	mux.HandleFunc("/combo.js", func(w gohttp.ResponseWriter, r *gohttp.Request) {
-		w.Header().Set("Content-Type", "application/javascript")
-		w.WriteHeader(gohttp.StatusOK)
-		w.Write(MustAsset("combo.js"))
-	})
+	for _, js := range []string{"combo.js", "jquery.min.js", "jquery-ui.min.js"} {
+		js := js
+		mux.HandleFunc("/"+js, func(w gohttp.ResponseWriter, r *gohttp.Request) {
+			w.Header().Set("Content-Type", "application/javascript")
+			w.WriteHeader(gohttp.StatusOK)
+			w.Write(MustAsset(js))
+		})
+	}
 
 	mux.HandleFunc("/combo.css", func(w gohttp.ResponseWriter, r *gohttp.Request) {
 		w.Header().Set("Content-Type", "text/css")
