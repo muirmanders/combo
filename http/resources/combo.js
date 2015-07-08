@@ -235,7 +235,9 @@ combo.init_key_handlers = function() {
   $(document).keyup(function(event) {
     if (key_code_to_num(event.keyCode) != null) {
       combo.split_piece_count = null;
-      combo.set_move_type();
+      if ($(".dropped").length == 0) {
+        combo.set_move_type();
+      }
     }
   });
 };
