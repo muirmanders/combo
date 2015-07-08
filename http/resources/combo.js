@@ -211,18 +211,29 @@ combo.set_move_type = function() {
 combo.init_key_handlers = function() {
   $(document).focus();
 
+  var key_code_to_num = function(key_code) {
+    if (key_code >= 49 && key_code <= 57) {
+      return key_code - 48;
+    }
+
+    if (key_code >= 65 && key_code <= 70) {
+      return key_code - 55;
+    }
+
+    return null;
+  };
+
   $(document).keydown(function(event) {
-    if (event.keyCode > 48 && event.keyCode <= 57) {
-      if (combo.split_piece_count == event.keyCode - 48) {
-        return;
-      }
-      combo.split_piece_count = event.keyCode - 48;
+    var num = key_code_to_num(event.keyCode);
+
+    if (num != null && num != combo.split_piece_count) {
+      combo.split_piece_count = num;
       combo.set_move_type();
     }
   });
 
   $(document).keyup(function(event) {
-    if (event.keyCode > 48 && event.keyCode <= 57) {
+    if (key_code_to_num(event.keyCode) != null) {
       combo.split_piece_count = null;
       combo.set_move_type();
     }
