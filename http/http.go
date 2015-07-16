@@ -17,7 +17,7 @@ import (
 
 var cpuPlayer game.Player
 
-func Go(listenAddr string, cpu game.Player) {
+func Go(listenAddr string, cpu game.Player, cert, key string) {
 	mux := gohttp.NewServeMux()
 
 	cpuPlayer = cpu
@@ -58,7 +58,17 @@ func Go(listenAddr string, cpu game.Player) {
 	})
 
 	fmt.Fprintf(os.Stdout, "Listening on %s...\n", listenAddr)
-	panic(gohttp.ListenAndServe(listenAddr, mux))
+
+	server := gohttp.Server{
+		Addr:    listenAddr,
+		Handler: mux,
+	}
+
+	if cert != "" && key != "" {
+		panic(server.ListenAndServeTLS(cert, key))
+	} else {
+		panic(server.ListenAndServe())
+	}
 }
 
 type httpPlayer struct {

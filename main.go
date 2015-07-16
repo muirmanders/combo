@@ -47,16 +47,18 @@ func main() {
 	cliCmd.Flags().StringVarP(&cpuPlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
 	rootCmd.AddCommand(cliCmd)
 
-	var httpListenAddr string
+	var httpListenAddr, certFile, keyFile string
 	httpCmd := &cobra.Command{
 		Use:   "http",
 		Short: "HTTP frontend for Combo",
 		Run: func(cmd *cobra.Command, args []string) {
-			http.Go(httpListenAddr, whitePlayer())
+			http.Go(httpListenAddr, whitePlayer(), certFile, keyFile)
 		},
 	}
 	httpCmd.Flags().StringVarP(&httpListenAddr, "listen", "l", "localhost:8080", "http server addr:port")
 	httpCmd.Flags().StringVarP(&cpuPlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
+	httpCmd.Flags().StringVarP(&certFile, "cert", "", "", "certificate file")
+	httpCmd.Flags().StringVarP(&keyFile, "key", "", "", "key file")
 	rootCmd.AddCommand(httpCmd)
 
 	rootCmd.Execute()
