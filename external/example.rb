@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# imeplements a random  player conforming to the external player interface
+# implements a random player conforming to the external player interface
 
 require "json"
 
@@ -52,7 +52,6 @@ def available_moves(cmd)
 end
 
 STDIN.each_line do |line|
-  moves = available_moves(JSON[line])
-  STDOUT.puts(JSON[moves[rand(moves.length)]])
+  STDOUT.puts(JSON[available_moves(JSON[line]).sample])
   STDOUT.flush
 end

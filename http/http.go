@@ -15,10 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var (
-	singleGame game.Game
-	cpuPlayer  game.Player
-)
+var cpuPlayer game.Player
 
 func Go(listenAddr string, cpu game.Player) {
 	mux := gohttp.NewServeMux()
@@ -131,47 +128,47 @@ type newGameArgs struct {
 func handleConnect(conn *websocket.Conn) {
 	player := httpPlayer{game.Black, conn}
 
-	for {
-		var c commandFromClient
-		err := conn.ReadJSON(&c)
-		if err != nil {
-			log.Println("websocket error:", err)
+	var c commandFromClient
+	err := conn.ReadJSON(&c)
+	if err != nil {
+		log.Println("websocket error:", err)
+		return
+	}
+
+	switch c.Command {
+	case "new_game":
+		var args newGameArgs
+		if err := json.Unmarshal(c.Args, &args); err != nil {
+			log.Printf("bad new_game args: %s (%s)", err, string(c.Args))
 			return
 		}
 
-		switch c.Command {
-		case "new_game":
-			var args newGameArgs
-			if err := json.Unmarshal(c.Args, &args); err != nil {
-				log.Printf("bad new_game args: %s (%s)", err, string(c.Args))
-				return
-			}
+		game, err := game.NewGame(game.Config{
+			Black:  player,
+			White:  cpuPlayer,
+			Width:  args.Width,
+			Height: args.Height,
+			Logger: os.Stderr,
+		})
 
-			singleGame, err = game.NewGame(game.Config{
-				Black:  player,
-				White:  cpuPlayer,
-				Width:  args.Width,
-				Height: args.Height,
-				Logger: os.Stderr,
-			})
-
-			if err != nil {
-				log.Printf("error creating game: %s", err)
-				return
-			}
-
-			winner := singleGame.Play()
-
-			gameOver := commandToClient{
-				Command: "game_over",
-				Args: map[string]string{
-					"message": fmt.Sprintf("%s (%s) is the winner!", winner.Color(), winner.Name()),
-				},
-			}
-			if err := conn.WriteJSON(gameOver); err != nil {
-				log.Printf("error sending game_over: %s", err)
-				return
-			}
+		if err != nil {
+			log.Printf("error creating game: %s", err)
+			return
 		}
+
+		winner := game.Play()
+
+		gameOver := commandToClient{
+			Command: "game_over",
+			Args: map[string]string{
+				"message": fmt.Sprintf("%s (%s) is the winner!", winner.Color(), winner.Name()),
+			},
+		}
+		if err := conn.WriteJSON(gameOver); err != nil {
+			log.Printf("error sending game_over: %s", err)
+			return
+		}
+	default:
+		log.Printf("unknown command from http player: %s", c.Command)
 	}
 }
