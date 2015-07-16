@@ -50,7 +50,12 @@ combo.display_message = function(msg) {
 combo.open_ws = function() {
   var width = 8, height = 8;
 
-  var ws = this.ws = new WebSocket("ws://" + location.host + "/connect");
+  var ws;
+  if (location.protocol == "https:") {
+    ws = this.ws = new WebSocket("wss://" + location.host + "/connect");
+  } else {
+    ws = this.ws = new WebSocket("ws://" + location.host + "/connect");
+  }
 
   ws.onmessage = function(event) {
     var cmd = JSON.parse(event.data);
