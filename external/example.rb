@@ -13,7 +13,7 @@ def available_moves(cmd)
       next
     end
 
-    (-1..1).zip(-1..1) do |dx, dy|
+    [-1, 0, 1].repeated_permutation(2).each do |dx, dy|
       if dx == 0 && dy == 0
         next
       end

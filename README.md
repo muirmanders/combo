@@ -1,6 +1,6 @@
 # combo
 
-Combo is an 8x8 board game. The top two rows start off with white pieces, and the bottom two rows black pieces. The players take turns moving a piece until the game is over. A player wins by capturing all his oponent's pieces. Black always goes first.
+Combo is an 8x8 board game. The top two rows start off with white pieces, and the bottom two rows black pieces. The players take turns moving a piece until the game is over. A player loses when all his pieces are captured or he has no available moves. Black always goes first.
 
 A piece has two properties: color (black/white), and count (number of pieces that have merged to make this piece). Pieces may combine with friendly pieces by moving into them. Two friendly pieces of any count are able to merge (e.g. a count=3 piece can merge with a count=4 to produce a count=7). A piece is allowed to move up to count squares horizontally, vertically, or diagonally.  When moving, pieces are optionally able to split off any number of pieces less than their count. This split off piece can then be moved like a normal piece of that count.
 
