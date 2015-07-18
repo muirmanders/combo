@@ -19,10 +19,14 @@ type cliPlayer struct {
 	color game.Color
 }
 
-func Go(cpuPlayer game.Player) {
+func Go(whitePlayer, blackPlayer game.Player) {
+	if blackPlayer == nil {
+		blackPlayer = cliPlayer{game.Black}
+	}
+
 	config := game.Config{
-		Black: cliPlayer{game.Black},
-		White: cpuPlayer,
+		Black: blackPlayer,
+		White: whitePlayer,
 
 		Width:  8,
 		Height: 8,
@@ -33,9 +37,9 @@ func Go(cpuPlayer game.Player) {
 		panic(err)
 	}
 
-	winner := g.Play()
+	result := g.Play()
 
-	fmt.Fprintf(os.Stdout, "\n%s is the winner!\n", winner.Name())
+	fmt.Fprintf(os.Stdout, "%s is the winner with %d remaining!\n", result.Winner.Color(), result.Score)
 }
 
 func (p cliPlayer) Color() game.Color {

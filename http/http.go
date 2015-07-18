@@ -166,12 +166,12 @@ func handleConnect(conn *websocket.Conn) {
 			return
 		}
 
-		winner := game.Play()
+		result := game.Play()
 
 		gameOver := commandToClient{
 			Command: "game_over",
 			Args: map[string]string{
-				"message": fmt.Sprintf("%s (%s) is the winner!", winner.Color(), winner.Name()),
+				"message": fmt.Sprintf("%s (%s) is the winner!", result.Winner.Color(), result.Winner.Name()),
 			},
 		}
 		if err := conn.WriteJSON(gameOver); err != nil {
