@@ -48,7 +48,6 @@ type Board interface {
 	Get(Position) (Square, error)
 	AvailableMoves(Color) []Move
 	IfMove(Move) Board
-	RemainingPieces(Color) int
 }
 
 type Move struct {
@@ -64,8 +63,13 @@ type Player interface {
 }
 
 type Game interface {
-	Play() Player
-	Board() Board
+	Play() GameResult
+}
+
+type GameResult struct {
+	Winner Player
+	Loser  Player
+	Score  int
 }
 
 type Config struct {
@@ -109,8 +113,24 @@ func (g *game) log(f string, args ...interface{}) {
 	fmt.Fprintf(g.logger, f, args...)
 }
 
+func finalScore(b Board, c Color) int {
+	remaining := 0
+
+	for x := 0; x < b.Width(); x++ {
+		for y := 0; y < b.Height(); y++ {
+
+			sq, _ := b.Get(Position{X: x, Y: y})
+			if sq.PieceColor == c {
+				remaining += sq.PieceCount
+			}
+		}
+	}
+
+	return remaining
+}
+
 // Play the game until completion, returning the winning Player.
-func (g *game) Play() Player {
+func (g *game) Play() GameResult {
 	var otherPlayer Player
 
 	for {
@@ -123,7 +143,11 @@ func (g *game) Play() Player {
 		availableMoves := g.board.AvailableMoves(g.turn.Color())
 		if len(availableMoves) == 0 {
 			g.log("Player %s (%s) loses for having no moves.\n", g.turn.Name(), g.turn.Color())
-			return otherPlayer
+			return GameResult{
+				Winner: otherPlayer,
+				Loser:  g.turn,
+				Score:  finalScore(g.board, otherPlayer.Color()),
+			}
 		}
 
 		move := g.turn.Move(g.board)
@@ -138,15 +162,15 @@ func (g *game) Play() Player {
 
 		if !moveOK {
 			g.log("Player %s (%s) loses for illegal move %+v.\n", g.turn.Name(), g.turn.Color(), move)
-			return otherPlayer
+			return GameResult{
+				Winner: otherPlayer,
+				Loser:  g.turn,
+				Score:  finalScore(g.board, otherPlayer.Color()),
+			}
 		}
 
 		g.board.applyMove(move)
 
 		g.turn = otherPlayer
 	}
-}
-
-func (g *game) Board() Board {
-	return g.board
 }
