@@ -48,6 +48,7 @@ type Board interface {
 	Get(Position) (Square, error)
 	AvailableMoves(Color) []Move
 	IfMove(Move) Board
+	RemainingPieces(Color) int
 }
 
 type Move struct {
@@ -64,6 +65,7 @@ type Player interface {
 
 type Game interface {
 	Play() Player
+	Board() Board
 }
 
 type Config struct {
@@ -143,4 +145,8 @@ func (g *game) Play() Player {
 
 		g.turn = otherPlayer
 	}
+}
+
+func (g *game) Board() Board {
+	return g.board
 }

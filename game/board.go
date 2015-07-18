@@ -149,6 +149,23 @@ func (b *board) applyMove(move Move) {
 	}
 }
 
+func (b *board) RemainingPieces(c Color) int {
+	remaining := 0
+
+	for x := 0; x < b.width; x++ {
+		for y := 0; y < b.height; y++ {
+
+			sq := b.squares[y*b.width+x]
+
+			if sq.PieceColor == c {
+				remaining += sq.PieceCount
+			}
+		}
+	}
+
+	return remaining
+}
+
 func (b *board) Width() int {
 	return b.width
 }
