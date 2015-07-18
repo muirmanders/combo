@@ -22,18 +22,20 @@ func main() {
 		Short: "CLI interface for starting Combo games",
 	}
 
-	var cpuPlayer string
+	var whitePlayer, blackPlayer string
 
-	whitePlayer := func() game.Player {
-		switch cpuPlayer {
+	makePlayer := func(playerName string, c game.Color) game.Player {
+		switch playerName {
+		case "human":
+			return nil
 		case "random":
-			return ai.NewRandomPlayer(game.White)
+			return ai.NewRandomPlayer(c)
 		case "weak":
-			return ai.NewWeakPlayer(game.White)
+			return ai.NewWeakPlayer(c)
 		case "medium":
-			return ai.NewMediumPlayer(game.White)
+			return ai.NewMediumPlayer(c)
 		default:
-			return external.NewExternalPlayer(cpuPlayer, game.White)
+			return external.NewExternalPlayer(playerName, c)
 		}
 	}
 
@@ -41,10 +43,12 @@ func main() {
 		Use:   "cli",
 		Short: "CLI frontend for Combo",
 		Run: func(cmd *cobra.Command, args []string) {
-			cli.Go(whitePlayer())
+			cli.Go(makePlayer(whitePlayer, game.White), makePlayer(blackPlayer, game.Black))
 		},
 	}
-	cliCmd.Flags().StringVarP(&cpuPlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
+	cliCmd.Flags().StringVarP(&whitePlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
+	cliCmd.Flags().StringVarP(&whitePlayer, "white", "w", "medium", "random|weak|medium|/path/to/external/player")
+	cliCmd.Flags().StringVarP(&blackPlayer, "black", "b", "human", "human|random|weak|medium|/path/to/external/player")
 	rootCmd.AddCommand(cliCmd)
 
 	var httpListenAddr, certFile, keyFile string
@@ -52,11 +56,11 @@ func main() {
 		Use:   "http",
 		Short: "HTTP frontend for Combo",
 		Run: func(cmd *cobra.Command, args []string) {
-			http.Go(httpListenAddr, whitePlayer(), certFile, keyFile)
+			http.Go(httpListenAddr, makePlayer(whitePlayer, game.White), certFile, keyFile)
 		},
 	}
 	httpCmd.Flags().StringVarP(&httpListenAddr, "listen", "l", "localhost:8080", "http server addr:port")
-	httpCmd.Flags().StringVarP(&cpuPlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
+	httpCmd.Flags().StringVarP(&whitePlayer, "cpu", "c", "medium", "random|weak|medium|/path/to/external/player")
 	httpCmd.Flags().StringVarP(&certFile, "cert", "", "", "certificate file")
 	httpCmd.Flags().StringVarP(&keyFile, "key", "", "", "key file")
 	rootCmd.AddCommand(httpCmd)

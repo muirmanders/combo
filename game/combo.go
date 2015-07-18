@@ -120,7 +120,7 @@ func (g *game) Play() Player {
 
 		availableMoves := g.board.AvailableMoves(g.turn.Color())
 		if len(availableMoves) == 0 {
-			g.log("Player %s loses for having no moves.", g.turn.Name())
+			g.log("Player %s (%s) loses for having no moves.\n", g.turn.Name(), g.turn.Color())
 			return otherPlayer
 		}
 
@@ -135,7 +135,7 @@ func (g *game) Play() Player {
 		}
 
 		if !moveOK {
-			g.log("Player %s loses for illegal move %+v.", g.turn.Name(), move)
+			g.log("Player %s (%s) loses for illegal move %+v.\n", g.turn.Name(), g.turn.Color(), move)
 			return otherPlayer
 		}
 
