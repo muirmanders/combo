@@ -24,3 +24,7 @@ task :dev_install => ["#{GOBIN}/godep", "#{GOBIN}/go-bindata"] do
   sh "#{GOBIN}/go-bindata --debug --pkg http -o http/resources.go --prefix http/resources http/resources"
   sh "#{GOBIN}/godep go install ./..."
 end
+
+task :test => :install do
+  sh "#{GOBIN}/godep go test ./..."
+end
