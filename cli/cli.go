@@ -39,7 +39,7 @@ func Go(whitePlayer, blackPlayer game.Player) {
 
 	result := g.Play()
 
-	fmt.Fprintf(os.Stdout, "%s is the winner with %d remaining!\n", result.Winner.Color(), result.Score)
+	fmt.Fprintf(os.Stdout, "%s is the winner with %d remaining!\n", result.Winner.Color(), result.WinnerPiecesRemaining)
 }
 
 func (p cliPlayer) Color() game.Color {
