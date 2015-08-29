@@ -122,7 +122,7 @@ func (g *game) log(f string, args ...interface{}) {
 	if g.logger == nil {
 		return
 	}
-	fmt.Fprintf(g.logger, f, args...)
+	fmt.Fprintf(g.logger, f+"\n", args...)
 }
 
 func piecesRemaining(b Board, c Color) int {
@@ -175,6 +175,8 @@ func (g *game) Play() GameResult {
 		clock       *time.Duration
 	)
 
+	g.log("%s (black) is facing off against %s (white)!", g.black.Name(), g.white.Name())
+
 	for {
 		if g.turn == g.black {
 			otherPlayer = g.white
@@ -186,7 +188,7 @@ func (g *game) Play() GameResult {
 
 		availableMoves := g.board.AvailableMoves(g.turn.Color())
 		if len(availableMoves) == 0 {
-			g.log("Player %s (%s) loses for having no moves.\n", g.turn.Name(), g.turn.Color())
+			g.log("Player %s (%s) loses for having no moves.", g.turn.Name(), g.turn.Color())
 			return g.gameResult(otherPlayer)
 		}
 
@@ -206,7 +208,7 @@ func (g *game) Play() GameResult {
 				*clock -= time.Since(moveStart)
 			case <-time.After(*clock):
 				*clock = time.Duration(0)
-				g.log("Player %s (%s) loses for running out of time.\n", g.turn.Name(), g.turn.Color())
+				g.log("Player %s (%s) loses for running out of time.", g.turn.Name(), g.turn.Color())
 				return g.gameResult(otherPlayer)
 			}
 		} else {
@@ -222,7 +224,7 @@ func (g *game) Play() GameResult {
 		}
 
 		if !moveOK {
-			g.log("Player %s (%s) loses for illegal move %+v.\n", g.turn.Name(), g.turn.Color(), move)
+			g.log("Player %s (%s) loses for illegal move %+v.", g.turn.Name(), g.turn.Color(), move)
 			return g.gameResult(otherPlayer)
 		}
 
