@@ -7,9 +7,12 @@ package main
 import (
 	"combo/ai"
 	"combo/cli"
+	"combo/contest"
 	"combo/external"
 	"combo/game"
 	"combo/http"
+	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -35,7 +38,12 @@ func main() {
 		case "medium":
 			return ai.NewMediumPlayer(c)
 		default:
-			return external.NewExternalPlayer(playerName, c)
+			player, err := external.NewExternalPlayer(c, playerName)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error creating external player: %s", err)
+				os.Exit(1)
+			}
+			return player
 		}
 	}
 
@@ -64,6 +72,20 @@ func main() {
 	httpCmd.Flags().StringVarP(&certFile, "cert", "", "", "certificate file")
 	httpCmd.Flags().StringVarP(&keyFile, "key", "", "", "key file")
 	rootCmd.AddCommand(httpCmd)
+
+	var submissionsDir string
+	contestCmd := &cobra.Command{
+		Use:   "contest",
+		Short: "Round-robin tournament",
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := contest.PlayTournament(submissionsDir); err != nil {
+				fmt.Printf("error playing tournament: %s\n", err)
+				os.Exit(1)
+			}
+		},
+	}
+	contestCmd.Flags().StringVarP(&submissionsDir, "submissions", "s", "", "directory containing extracted submissions")
+	rootCmd.AddCommand(contestCmd)
 
 	rootCmd.Execute()
 }

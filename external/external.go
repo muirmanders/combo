@@ -13,19 +13,35 @@ import (
 )
 
 type player struct {
-	color game.Color
-	path  string
-
+	color         game.Color
 	cmd           *exec.Cmd
 	stdinEncoder  *json.Encoder
 	stdoutDecoder *json.Decoder
 }
 
-func NewExternalPlayer(path string, color game.Color) game.Player {
-	return &player{
-		color: color,
-		path:  path,
+func NewExternalPlayer(color game.Color, path string, args ...string) (game.Player, error) {
+	cmd := exec.Command(path, args...)
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("error opening stdin pipe: %s", err)
 	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("error opening stdout pipe: %s", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("error starting external player: %s", err)
+	}
+
+	return &player{
+		color:         color,
+		cmd:           cmd,
+		stdinEncoder:  json.NewEncoder(stdin),
+		stdoutDecoder: json.NewDecoder(stdout),
+	}, nil
 }
 
 func (p *player) Color() game.Color {
@@ -42,39 +58,15 @@ type moveRequest struct {
 }
 
 func (p *player) Move(b game.Board) game.Move {
-	if p.cmd == nil {
-		var err error
-		p.cmd = exec.Command(p.path)
-
-		stdin, err := p.cmd.StdinPipe()
-		if err != nil {
-			fmt.Printf("Error opening stdin pipe: %s\n", err)
-			os.Exit(1)
-		}
-		p.stdinEncoder = json.NewEncoder(stdin)
-
-		stdout, err := p.cmd.StdoutPipe()
-		if err != nil {
-			fmt.Printf("Error opening stdout pipe: %s\n", err)
-			os.Exit(1)
-		}
-		p.stdoutDecoder = json.NewDecoder(stdout)
-
-		if err = p.cmd.Start(); err != nil {
-			fmt.Printf("Error starting external player: %s\n", err)
-			os.Exit(1)
-		}
-	}
+	var move game.Move
 
 	if err := p.stdinEncoder.Encode(moveRequest{b, p.Color()}); err != nil {
-		fmt.Printf("Error sending JSON board state: %s\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Error sending JSON board state: %s\n", err)
+		return move
 	}
 
-	var move game.Move
 	if err := p.stdoutDecoder.Decode(&move); err != nil {
-		fmt.Printf("Error decoding move: %s\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Error decoding move: %s\n", err)
 	}
 
 	return move

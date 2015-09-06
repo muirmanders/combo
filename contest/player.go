@@ -4,11 +4,18 @@
 
 package contest
 
-import "combo/game"
+import (
+	"combo/external"
+	"combo/game"
+	"fmt"
+	"os/exec"
+	"strings"
+)
 
 type player struct {
-	name  string
-	color game.Color
+	name           string
+	externalPlayer game.Player
+	containerID    string
 }
 
 func (p *player) Name() string {
@@ -16,16 +23,53 @@ func (p *player) Name() string {
 }
 
 func (p *player) Move(b game.Board) game.Move {
-	return game.Move{}
+	return p.externalPlayer.Move(b)
 }
 
 func (p *player) Color() game.Color {
-	return p.color
+	return p.externalPlayer.Color()
 }
 
 func (p *player) kill() {
+	exec.Command("docker", "kill", p.containerID).Run()
 }
 
-func newPlayer(c contestant) *player {
-	return new(player)
+func newPlayer(c contestant, color game.Color) (*player, error) {
+
+	var cpus string
+	if color == game.Black {
+		cpus = "0,1"
+	} else {
+		cpus = "2,3"
+	}
+
+	args := []string{
+		"run",
+		"--interactive",
+		"--tty",
+		"--rm",
+		"--net=none",
+		"--memory=8G",
+		"--cpuset-cpus=" + cpus,
+		"--volume=" + c.submission + ":/combo",
+		"combo",
+		"/combo/start",
+	}
+
+	ep, err := external.NewExternalPlayer(color, "docker", args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	containerIDBytes, err := exec.Command("docker", "ps", "--latest", "--quiet").CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("error getting latest image id: %s (%s)", err, containerIDBytes)
+	}
+
+	return &player{
+		name:           c.email,
+		externalPlayer: ep,
+		containerID:    strings.TrimSpace(string(containerIDBytes)),
+	}, nil
 }

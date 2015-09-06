@@ -7,7 +7,9 @@ package contest
 import (
 	"combo/game"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 )
@@ -15,9 +17,8 @@ import (
 // download all submissions from s3, do round-robin tournament, add some sort of game log
 
 type contestant struct {
-	email      string
-	submission string
-
+	email           string
+	submission      string
 	wins            int
 	losses          int
 	piecesRemaining int
@@ -39,18 +40,35 @@ func (c contestantSlice) Less(i, j int) bool {
 	c2 := c[j]
 
 	if c1.wins != c2.wins {
-		return c1.wins < c2.wins
+		return c1.wins > c2.wins
 	}
 
 	if c1.piecesRemaining != c2.piecesRemaining {
-		return c1.piecesRemaining < c2.piecesRemaining
+		return c1.piecesRemaining > c2.piecesRemaining
 	}
 
 	return c1.clockRemaining > c2.clockRemaining
 }
 
-func PlayTournament() {
+func PlayTournament(submissionsDir string) error {
+
+	contents, err := ioutil.ReadDir(submissionsDir)
+	if err != nil {
+		return fmt.Errorf("error reading submissions dir %s: %s", submissionsDir, err)
+	}
+
 	var contestants []contestant
+
+	for _, entry := range contents {
+		if entry.Name() == "." || entry.Name() == ".." {
+			continue
+		}
+
+		contestants = append(contestants, contestant{
+			email:      entry.Name(),
+			submission: filepath.Join(submissionsDir, entry.Name()),
+		})
+	}
 
 	logger, err := os.Create("/tmp/contest.log")
 	if err != nil {
@@ -66,8 +84,17 @@ func PlayTournament() {
 			c1 := &contestants[i]
 			c2 := &contestants[j]
 
-			p1 := newPlayer(*c1)
-			p2 := newPlayer(*c2)
+			p1, err := newPlayer(*c1, game.Black)
+			if err != nil {
+				fmt.Fprintf(logger, "failed starting player %s: %s\n", c1.email, err)
+				continue
+			}
+
+			p2, err := newPlayer(*c2, game.White)
+			if err != nil {
+				fmt.Fprintf(logger, "failed starting player %s: %s\n", c2.email, err)
+				continue
+			}
 
 			g, err := game.NewGame(game.Config{
 				Black:     p1,
@@ -111,4 +138,6 @@ func PlayTournament() {
 	for i, c := range contestants {
 		fmt.Fprintf(logger, "%2d. %s %d wins, %d losses, %d pieces remaining, %s clock left\n", i+1, c.email, c.wins, c.losses, c.piecesRemaining, c.clockRemaining)
 	}
+
+	return nil
 }
