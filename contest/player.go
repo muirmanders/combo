@@ -46,7 +46,6 @@ func newPlayer(c contestant, color game.Color) (*player, error) {
 	args := []string{
 		"run",
 		"--interactive",
-		"--tty",
 		"--rm",
 		"--net=none",
 		"--memory=8G",
@@ -56,7 +55,7 @@ func newPlayer(c contestant, color game.Color) (*player, error) {
 		"/combo/start",
 	}
 
-	ep, err := external.NewExternalPlayer(color, "docker", args...)
+	ep, err := external.NewExternalPlayer(color, "/usr/bin/docker", args...)
 
 	if err != nil {
 		return nil, err

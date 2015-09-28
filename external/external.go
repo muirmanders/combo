@@ -8,6 +8,7 @@ import (
 	"combo/game"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
@@ -32,9 +33,16 @@ func NewExternalPlayer(color game.Color, path string, args ...string) (game.Play
 		return nil, fmt.Errorf("error opening stdout pipe: %s", err)
 	}
 
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("error opening stderr pipe: %s", err)
+	}
+
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("error starting external player: %s", err)
 	}
+
+	go io.Copy(os.Stdout, stderr)
 
 	return &player{
 		color:         color,

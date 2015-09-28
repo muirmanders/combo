@@ -215,6 +215,8 @@ func (g *game) Play() GameResult {
 			move = g.turn.Move(g.board)
 		}
 
+		g.log("Player %s (%s) has made move %+v", g.turn.Name(), g.turn.Color(), move)
+
 		var moveOK bool
 		for _, availableMove := range availableMoves {
 			if move == availableMove {

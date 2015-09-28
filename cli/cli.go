@@ -24,12 +24,19 @@ func Go(whitePlayer, blackPlayer game.Player) {
 		blackPlayer = cliPlayer{game.Black}
 	}
 
+	logFile, err := os.Create("/tmp/combo.log")
+	if err != nil {
+		fmt.Printf("Failed creating log file /tmp/combo.log: %s", err)
+	}
+
 	config := game.Config{
 		Black: blackPlayer,
 		White: whitePlayer,
 
 		Width:  8,
 		Height: 8,
+
+		Logger: logFile,
 	}
 
 	g, err := game.NewGame(config)
